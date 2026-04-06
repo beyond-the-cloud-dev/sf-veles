@@ -1,0 +1,61 @@
+{
+  "name": "@beyondthecloud/sf-veles",
+  "version": "0.1.0",
+  "description": "SF CLI plugin for Veles — provision and connect scratch orgs and sandboxes to your Veles Hub",
+  "type": "module",
+  "main": "lib/commands/veles/setup.js",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/beyond-the-cloud-dev/sf-veles.git"
+  },
+  "homepage": "https://github.com/beyond-the-cloud-dev/sf-veles",
+  "bugs": {
+    "url": "https://github.com/beyond-the-cloud-dev/sf-veles/issues"
+  },
+  "keywords": [
+    "salesforce",
+    "sf-cli",
+    "sf",
+    "oclif-plugin",
+    "veles",
+    "scratch-org",
+    "sandbox",
+    "provisioning"
+  ],
+  "files": [
+    "lib",
+    "messages",
+    "oclif.manifest.json"
+  ],
+  "dependencies": {
+    "@oclif/core": "^4",
+    "@salesforce/core": "^8",
+    "@salesforce/sf-plugins-core": "^12"
+  },
+  "devDependencies": {
+    "oclif": "^4",
+    "typescript": "^5"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf lib",
+    "prepack": "npm run clean && npm run build && oclif manifest"
+  },
+  "oclif": {
+    "commands": "./lib/commands",
+    "bin": "sf",
+    "topicSeparator": " ",
+    "topics": {
+      "veles": {
+        "description": "Commands for Veles scratch org provisioning"
+      }
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
