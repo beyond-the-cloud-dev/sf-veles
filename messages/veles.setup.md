@@ -1,36 +1,38 @@
 # summary
 
-Provision and connect a scratch org or sandbox to the Veles Hub.
+Set up Veles on an existing scratch org or sandbox and connect it to the Veles Hub.
 
 # description
 
-Provisions a scratch org or sandbox on the Hub by creating an Environment record and VelesConnection token, then deploys the connection metadata to the target org and initiates the connect flow. For scratch orgs, automatically installs the Veles package if not already present.
+This command does not create scratch orgs or sandboxes. The target org must already exist and be authorized with the Salesforce CLI before running `sf veles setup`. For sandboxes, an `Environment__c` record for that sandbox must also already exist on the Hub.
+
+Sets up Veles on an existing scratch org or sandbox by creating an Environment record and VelesConnection token on the Hub, then deploying the connection metadata to the target org and initiating the connect flow. For scratch orgs, automatically installs the Veles package if not already present.
 
 # examples
 
-- Provision scratch org with default DevHub:
+- Set up Veles on scratch org with default DevHub:
 
   <%= config.bin %> <%= command.id %> --target-org my-scratch
 
-- Provision scratch org with explicit DevHub and group:
+- Set up Veles on scratch org with explicit DevHub and group:
 
   <%= config.bin %> <%= command.id %> --target-org my-scratch --target-dev-hub my-hub --group MyGroup
 
-- Provision sandbox with explicit Hub:
+- Set up Veles on sandbox with explicit Hub:
 
   <%= config.bin %> <%= command.id %> --target-org my-sandbox --target-dev-hub my-hub
 
-- Provision scratch org with package installation key:
+- Set up Veles on scratch org with package installation key:
 
   <%= config.bin %> <%= command.id %> --target-org my-scratch --installation-key MyKey123
 
-- Provision using SF CLI defaults (default org + default DevHub):
+- Set up Veles using SF CLI defaults (default org + default DevHub):
 
   <%= config.bin %> <%= command.id %>
 
 # flags.target-org.summary
 
-Scratch org or sandbox alias or username to provision (defaults to the SF CLI default org).
+Already-created and authorized scratch org or sandbox (alias or username) to set up Veles on (defaults to the SF CLI default org).
 
 # flags.target-dev-hub.summary
 

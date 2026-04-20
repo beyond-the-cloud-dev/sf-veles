@@ -1,7 +1,7 @@
 {
   "name": "@beyondthecloud/sf-veles",
   "version": "0.1.0",
-  "description": "SF CLI plugin for Veles — provision and connect scratch orgs and sandboxes to your Veles Hub",
+  "description": "SF CLI plugin for Veles — set up Veles on existing scratch orgs and sandboxes and connect them to your Veles Hub",
   "type": "module",
   "main": "lib/commands/veles/setup.js",
   "license": "MIT",
@@ -48,7 +48,7 @@
     "topicSeparator": " ",
     "topics": {
       "veles": {
-        "description": "Commands for Veles scratch org provisioning"
+        "description": "Commands for setting up Veles on scratch orgs and sandboxes"
       }
     }
   },
