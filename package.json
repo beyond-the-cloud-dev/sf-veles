@@ -1,6 +1,6 @@
 {
   "name": "@beyondthecloud/sf-veles",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SF CLI plugin for Veles — set up Veles on existing scratch orgs and sandboxes and connect them to your Veles Hub",
   "type": "module",
   "main": "lib/commands/veles/setup.js",
