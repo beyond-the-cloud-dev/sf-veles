@@ -22,7 +22,8 @@ sf veles setup --target-org <scratch-or-sandbox> [--target-dev-hub <hub>] [--gro
 2. Installs the Veles managed package (if not already present)
 3. Deploys Remote Site Settings for Hub communication
 4. Configures the connection metadata
-5. Connects the org to the Hub
+5. Connects the org to the Hub; on verified connect the Hub automatically enqueues `EnvironmentSetupJob` to create the Hub→child Remote Site Setting (no manual "Deploy RSS" step required on the Hub)
+6. Runs environment setup (`VelesOrgSetup.runEnvironmentSetup`) to deploy the API-Access Remote Site Setting and stamp the hub org id automatically
 
 ### Examples
 
@@ -38,6 +39,12 @@ sf veles setup --target-org my-sandbox --target-dev-hub my-hub
 
 # With package installation key
 sf veles setup --target-org my-scratch --installation-key MyKey123
+
+# Detailed step-by-step output with a final summary
+sf veles setup --target-org my-scratch --verbose
+
+# Machine-readable structured result (exit code reflects success/failure)
+sf veles setup --target-org my-scratch --json
 ```
 
 ### Flags
@@ -48,6 +55,8 @@ sf veles setup --target-org my-scratch --installation-key MyKey123
 | `--target-dev-hub`   | `-v`  | No       | Hub/DevHub org (defaults to SF CLI default)                     |
 | `--group`            | `-g`  | No       | Environment group name on the Hub                               |
 | `--installation-key` | `-k`  | No       | Installation key for the Veles package                          |
+| `--verbose`          |       | No       | Show detailed step-by-step output and a final setup summary     |
+| `--json`             |       | No       | Return a structured JSON result (standard SF CLI flag)          |
 
 ## Prerequisites
 

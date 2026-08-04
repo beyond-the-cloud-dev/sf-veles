@@ -1,0 +1,250 @@
+- generic [active]:
+  - generic [ref=e2]:
+    - generic [ref=e3]:
+      - link "Skip to Navigation" [ref=e4] [cursor=pointer]:
+        - /url: javascript:void(0);
+      - link "Skip to Main Content" [ref=e5] [cursor=pointer]:
+        - /url: javascript:void(0);
+      - generic [ref=e6]:
+        - button "Search" [ref=e12]:
+          - img [ref=e14]
+          - text: Search...
+        - navigation "Global Header" [ref=e17]:
+          - list [ref=e19]:
+            - listitem [ref=e20]:
+              - group [ref=e21]:
+                - button "Add favorite" [ref=e23] [cursor=pointer]:
+                  - generic [ref=e24]:
+                    - img [ref=e28]
+                    - tooltip "Add favorite"
+                - button "Favorites list" [ref=e32] [cursor=pointer]:
+                  - generic [ref=e33]:
+                    - img [ref=e37]
+                    - tooltip "Favorites list"
+            - listitem [ref=e40]:
+              - button "Global Actions" [ref=e146] [cursor=pointer]:
+                - generic [ref=e147]:
+                  - img [ref=e151]
+                  - tooltip "Global Actions"
+            - listitem [ref=e154]:
+              - button "Guidance Center" [ref=e156] [cursor=pointer]:
+                - generic [ref=e157]:
+                  - img [ref=e161]
+                  - tooltip "Guidance Center"
+            - listitem [ref=e49]:
+              - button "Salesforce Help" [ref=e52] [cursor=pointer]:
+                - generic [ref=e53]:
+                  - img [ref=e57]
+                  - tooltip "Salesforce Help"
+            - listitem [ref=e60]:
+              - button "Setup" [ref=e66] [cursor=pointer]:
+                - generic [ref=e67]:
+                  - img [ref=e71]
+                  - tooltip "Setup"
+            - listitem [ref=e74]:
+              - button "2 Notifications" [ref=e164] [cursor=pointer]:
+                - generic [ref=e78]:
+                  - generic [ref=e79]:
+                    - img [ref=e83]
+                    - generic [ref=e166]: "2"
+                  - tooltip "Notifications"
+              - generic [ref=e86]: 2 new notifications
+            - listitem [ref=e87]:
+              - button "View profile" [ref=e90] [cursor=pointer]:
+                - generic [ref=e91]:
+                  - tooltip "View profile"
+    - generic [ref=e95]:
+      - generic [ref=e98]:
+        - generic [ref=e100]:
+          - navigation "App" [ref=e101]:
+            - button "App Launcher" [ref=e103] [cursor=pointer]:
+              - generic [ref=e114]: App Launcher
+          - heading "Veles" [level=1] [ref=e115]:
+            - generic "Veles" [ref=e116]
+        - navigation "Global" [ref=e119]:
+          - list [ref=e120]:
+            - listitem [ref=e121] [cursor=pointer]:
+              - link "Command Center" [ref=e122]:
+                - /url: /lightning/n/CommandCenter
+                - generic [ref=e123]: Command Center
+            - listitem [ref=e124]:
+              - button "Edit nav items" [ref=e126] [cursor=pointer]:
+                - img [ref=e128]
+                - generic [ref=e131]: Edit nav items
+      - main [ref=e133]:
+        - article [ref=e168]:
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - img "Veles" [ref=e172]
+              - heading "Command Center" [level=1] [ref=e174]:
+                - generic [ref=e175]: Command Center
+            - generic [ref=e176]:
+              - button "Refresh all data" [ref=e178] [cursor=pointer]:
+                - img [ref=e180]
+                - generic [ref=e183]: Refresh all data
+              - group [ref=e184]:
+                - generic [ref=e186]:
+                  - button "Import Config" [ref=e188] [cursor=pointer]:
+                    - img [ref=e190]
+                    - text: Import Config
+                  - button "Export Config" [ref=e194] [cursor=pointer]:
+                    - img [ref=e196]
+                    - text: Export Config
+          - generic [ref=e200]:
+            - tablist [ref=e201]:
+              - tab "Configuration Management" [ref=e202] [cursor=pointer]
+              - tab "Environment Management" [ref=e203] [cursor=pointer]
+              - tab "Environment Group Management" [ref=e204] [cursor=pointer]
+              - tab "Actions" [ref=e205] [cursor=pointer]
+              - tab "Activity Log" [ref=e206] [cursor=pointer]
+              - tab "Setup" [ref=e207] [cursor=pointer]:
+                - img [ref=e211]
+                - text: Setup
+            - tabpanel [ref=e451]:
+              - generic [ref=e454]:
+                - generic [ref=e457]:
+                  - generic [ref=e459]:
+                    - heading "Environments(3 / 5)" [level=1] [ref=e463]
+                    - button "New Environment" [ref=e467] [cursor=pointer]:
+                      - img [ref=e469]
+                      - text: New Environment
+                  - generic [ref=e472]:
+                    - generic [ref=e473]:
+                      - generic [ref=e474]:
+                        - generic [ref=e475]: ★
+                        - generic [ref=e476]: Current Environment
+                      - generic [ref=e478] [cursor=pointer]:
+                        - img [ref=e483]
+                        - generic [ref=e486]:
+                          - heading "Veles E2E" [level=3] [ref=e487]
+                          - generic [ref=e488]:
+                            - generic [ref=e489]: Production
+                            - generic [ref=e490]:
+                              - img [ref=e494]
+                              - text: Hub
+                    - generic [ref=e497]:
+                      - generic [ref=e499] [cursor=pointer]:
+                        - img [ref=e503]
+                        - generic [ref=e506]: Sandboxes
+                        - generic [ref=e507]: (1)
+                      - generic [ref=e510] [cursor=pointer]:
+                        - img [ref=e515]
+                        - generic [ref=e518]:
+                          - heading "e2e_dev_sandbox" [level=3] [ref=e519]
+                          - generic [ref=e520]:
+                            - img [ref=e524]
+                            - text: Veles E2E
+                    - generic [ref=e527]:
+                      - generic [ref=e529] [cursor=pointer]:
+                        - img [ref=e533]
+                        - generic [ref=e536]: Scratch Orgs
+                        - generic [ref=e537]: (1)
+                      - generic [ref=e540] [cursor=pointer]:
+                        - img [ref=e545]
+                        - generic [ref=e548]:
+                          - heading "BTC-Veles Scratch" [level=3] [ref=e549]
+                          - generic [ref=e550]:
+                            - img [ref=e554]
+                            - text: E2E_Scratch_Orgs
+                          - generic [ref=e557]:
+                            - img [ref=e561]
+                            - text: Veles E2E
+                - generic [ref=e566]:
+                  - generic [ref=e577]:
+                    - generic [ref=e579]:
+                      - button "Back to environments" [ref=e582] [cursor=pointer]:
+                        - img [ref=e584]
+                        - generic [ref=e587]: Back to environments
+                      - generic [ref=e588]:
+                        - heading "e2e_dev_sandbox" [level=1] [ref=e590]
+                        - paragraph [ref=e591]: Environment details and configuration
+                    - group [ref=e593]:
+                      - generic [ref=e595]:
+                        - button "Edit" [ref=e597] [cursor=pointer]:
+                          - img [ref=e599]
+                          - text: Edit
+                        - button "Delete" [ref=e603] [cursor=pointer]:
+                          - img [ref=e605]
+                          - text: Delete
+                        - button "More actions" [ref=e609] [cursor=pointer]:
+                          - img [ref=e611]
+                          - generic [ref=e614]: More actions
+                  - generic [ref=e615]:
+                    - generic [ref=e616]:
+                      - heading "Environment Details" [level=3] [ref=e617]
+                      - generic [ref=e618]:
+                        - generic [ref=e620]:
+                          - generic [ref=e621]: Label
+                          - generic [ref=e623]: e2e_dev_sandbox
+                        - generic [ref=e625]:
+                          - generic [ref=e626]: Name
+                          - generic [ref=e628]: e2e_dev_sandbox
+                        - generic [ref=e630]:
+                          - generic [ref=e631]: Type
+                          - generic [ref=e633]: Sandbox
+                        - generic [ref=e635]:
+                          - generic [ref=e636]: Environment Group
+                          - generic [ref=e638]: —
+                        - generic [ref=e640]:
+                          - generic [ref=e641]: Instance URL
+                          - link "https://veles-e2e--dev.sandbox.my.salesforce.com" [ref=e643] [cursor=pointer]:
+                            - /url: https://veles-e2e--dev.sandbox.my.salesforce.com
+                        - generic [ref=e645]:
+                          - generic [ref=e646]: Salesforce Org ID
+                          - generic [ref=e648]: 00DS800000FwzIbMAJ
+                        - generic [ref=e650]:
+                          - generic [ref=e651]: Production Environment
+                          - generic [ref=e653]: Veles E2E
+                        - generic [ref=e655]:
+                          - generic [ref=e656]: Authorization Status
+                          - generic [ref=e658]:
+                            - img [ref=e662]
+                            - generic [ref=e665]: Not authorized
+                        - generic [ref=e667]:
+                          - generic [ref=e668]: Connection
+                          - generic [ref=e670]:
+                            - img [ref=e674]
+                            - generic [ref=e677]: Connected
+                        - generic [ref=e679]:
+                          - generic [ref=e680]: Veles Connection
+                          - generic [ref=e681]:
+                            - generic [ref=e682]:
+                              - img [ref=e686]
+                              - generic [ref=e689]: Configured
+                            - paragraph [ref=e690]: Shows whether Veles can securely communicate with this sandbox without OAuth
+                        - generic [ref=e692]:
+                          - generic [ref=e693]: Settings
+                          - generic [ref=e695]:
+                            - generic [ref=e697]: Allow Self-Service Refresh
+                            - generic [ref=e699]: Auto-Detect Refresh
+                            - generic [ref=e701]: Auto-Execute Actions
+                      - generic [ref=e702]:
+                        - heading "Configuration" [level=4] [ref=e703]
+                        - paragraph [ref=e704]: Push configuration and workflows to this environment.
+                        - button "Push Config to Environment" [ref=e706] [cursor=pointer]:
+                          - generic [ref=e707]:
+                            - img
+                          - text: Push Config to Environment
+                    - generic [ref=e711]:
+                      - generic [ref=e712]:
+                        - heading "Assigned Workflows" [level=3] [ref=e713]
+                        - generic [ref=e714]:
+                          - generic:
+                            - button "Add Workflow" [disabled]:
+                              - generic:
+                                - img
+                              - text: Add Workflow
+                      - generic [ref=e716]:
+                        - generic [ref=e719]:
+                          - generic [ref=e720]: Post Refresh Workflow
+                          - generic [ref=e721]: (E2E_Post_Refresh)
+                        - generic [ref=e723]: Active
+                        - generic [ref=e724]:
+                          - button "Edit" [ref=e726] [cursor=pointer]:
+                            - img [ref=e728]
+                            - generic [ref=e731]: Edit
+                          - button "Remove" [ref=e733] [cursor=pointer]:
+                            - img [ref=e735]
+                            - generic [ref=e738]: Remove
+  - generic:
+    - status

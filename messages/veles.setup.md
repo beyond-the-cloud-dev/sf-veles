@@ -30,6 +30,10 @@ Sets up Veles on an existing scratch org or sandbox by creating an Environment r
 
   <%= config.bin %> <%= command.id %>
 
+- Set up Veles with detailed step-by-step output and a final summary:
+
+  <%= config.bin %> <%= command.id %> --target-org my-scratch --verbose
+
 # flags.target-org.summary
 
 Already-created and authorized scratch org or sandbox (alias or username) to set up Veles on (defaults to the SF CLI default org).
@@ -45,3 +49,15 @@ Environment group name on the Hub.
 # flags.installation-key.summary
 
 Installation key for the Veles package (if required).
+
+# flags.integration-permset.summary
+
+Name of the unmanaged clone of the packaged Veles Hub Integration permission set (defaults to "VelesIntegration"). The command clones the least-privilege Veles Hub Integration template into this unmanaged copy, assigns it to the integration user, and adds it to the ECA pre-authorized permission sets. An unmanaged clone is required because Salesforce ECA pre-authorization does not accept a managed/packaged permission set in its picker.
+
+# flags.integration-user.summary
+
+Username to grant integration-user permissions and ECA pre-authorization (defaults to the CLI-authenticated user on the target org).
+
+# flags.verbose.summary
+
+Show detailed step-by-step output and a final setup summary.
