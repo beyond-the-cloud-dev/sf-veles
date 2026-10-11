@@ -17,8 +17,46 @@ const messages = Messages.loadMessages('@beyondthecloud/sf-veles', 'veles.setup'
 
 const MANAGED_NAMESPACE = 'btcveles';
 const TEMPLATE_PERMSET = 'VelesHubIntegration';
+const SEAT_GRANT_MARKER = 'SEAT_GRANT_RESULT:';
 const POLL_INTERVAL_MS = 3000;
 const MAX_POLL_ATTEMPTS = 60;
+export const GROUP_ON_SANDBOX_REFUSAL =
+  '--group applies to scratch orgs only; sandbox memberships come from the Hub environment';
+export const VELES_DEV_NOT_ASSIGNED = 'VelesDev permission set not assigned. Assign it to your user on the Hub org.';
+
+export function hubRefusalOf(err: unknown): string | undefined {
+  const message = (err as { message?: unknown } | undefined)?.message;
+  if (typeof message !== 'string') {
+    return undefined;
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(message);
+  } catch {
+    return undefined;
+  }
+  const body = (Array.isArray(parsed) ? parsed[0] : parsed) as { error?: unknown } | undefined;
+  return typeof body?.error === 'string' ? body.error : undefined;
+}
+
+export function toSetupError(err: unknown, hubUrl: string): Error {
+  const error = err as { statusCode?: number; errorCode?: string } | undefined;
+  if (error?.statusCode === 401 || error?.errorCode === 'ERROR_HTTP_401') {
+    return new Error(VELES_DEV_NOT_ASSIGNED);
+  }
+  const refusal = hubRefusalOf(err);
+  if (!refusal) {
+    return err instanceof Error ? err : new Error(String(err));
+  }
+  return new Error(`The Hub ${hubUrl} refused to connect this org: ${refusal}`);
+}
+
+function isNotFound(err: unknown): boolean {
+  const error = err as { statusCode?: number; message?: string; errorCode?: string } | undefined;
+  return error?.statusCode === 404
+    || error?.errorCode === 'NOT_FOUND'
+    || (error?.message ?? '').includes('Could not find a match for URL');
+}
 
 const RESET = '\x1b[0m';
 const CYAN = '\x1b[36m';
@@ -218,6 +256,7 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     }),
     group: Flags.string({
       char: 'g',
+      multiple: true,
       summary: messages.getMessage('flags.group.summary'),
     }),
     'installation-key': Flags.string({
@@ -257,7 +296,7 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     });
 
     const targetOrg = flags['target-org'] as Org;
-    const groupName = flags.group as string | undefined;
+    const groupNames = (flags.group as string[] | undefined) ?? [];
     const installationKey = flags['installation-key'] as string | undefined;
     const integrationPermset = (flags['integration-permset'] as string) || 'VelesIntegration';
     const integrationUserOverride = flags['integration-user'] as string | undefined;
@@ -271,6 +310,11 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     const isSandbox = orgInfo.IsSandbox && orgInfo.TrialExpirationDate === null;
     const isScratchOrg = orgInfo.IsSandbox && orgInfo.TrialExpirationDate !== null;
     const orgTypeLabel = isSandbox ? 'Sandbox' : isScratchOrg ? 'Scratch Org' : 'Unknown';
+
+    if (isSandbox && groupNames.length > 0) {
+      this.stepFail('Resolving org & Hub');
+      throw new Error(GROUP_ON_SANDBOX_REFUSAL);
+    }
 
     this.detail(`Org ID: ${orgId}`);
     this.detail(`Org name: ${orgName}`);
@@ -297,7 +341,7 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     const provisionResponse = await this.callProvisionEndpoint(
       devhubConn,
       orgId,
-      groupName,
+      groupNames,
       environmentName,
       environmentLabel,
       orgType,
@@ -384,7 +428,7 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
 
     this.stepStart('Connecting to Hub');
     this.detail('Triggering org connect...');
-    await this.triggerConnect(username, groupName);
+    await this.triggerConnect(username, groupNames);
     this.detail('Waiting for connection to complete...');
     const connected = await this.pollConnectionComplete(username);
     if (connected) {
@@ -558,6 +602,10 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     return normalized.endsWith('/') ? normalized.slice(0, -1) : normalized;
   }
 
+  private escapeApexLiteral(value: string): string {
+    return value.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+
   private escapeSoql(value: string): string {
     return value.replace(/'/g, "\\'");
   }
@@ -680,19 +728,18 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     }
   }
 
-  private async callProvisionEndpoint(
-    conn: Connection,
+  private buildProvisionBody(
     orgId: string,
-    groupName: string | undefined,
+    groupNames: string[],
     environmentName: string,
     environmentLabel: string,
     orgType: string | undefined,
     integrationUsername: string,
     sandboxName?: string,
-  ): Promise<ProvisionResponse> {
+  ): Record<string, unknown> {
     const body: Record<string, unknown> = {
       orgId,
-      groupName: groupName ?? null,
+      groupNames,
       environmentName,
       environmentLabel,
       integrationUsername,
@@ -703,6 +750,28 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     if (sandboxName) {
       body.sandboxName = sandboxName;
     }
+    return body;
+  }
+
+  private async callProvisionEndpoint(
+    conn: Connection,
+    orgId: string,
+    groupNames: string[],
+    environmentName: string,
+    environmentLabel: string,
+    orgType: string | undefined,
+    integrationUsername: string,
+    sandboxName?: string,
+  ): Promise<ProvisionResponse> {
+    const body = this.buildProvisionBody(
+      orgId,
+      groupNames,
+      environmentName,
+      environmentLabel,
+      orgType,
+      integrationUsername,
+      sandboxName,
+    );
 
     const namespacedPath = `/services/apexrest/${MANAGED_NAMESPACE}/veles/provision`;
     const unnamespacedPath = '/services/apexrest/veles/provision';
@@ -712,19 +781,14 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     try {
       response = await this.postToEndpoint(conn, namespacedPath, body);
     } catch (err: unknown) {
-      const error = err as { statusCode?: number; message?: string; errorCode?: string };
-      const isNotFound = error.statusCode === 404
-        || error.errorCode === 'NOT_FOUND'
-        || (error.message ?? '').includes('Could not find a match for URL');
-      if (isNotFound) {
-        this.namespace = '';
+      if (!isNotFound(err)) {
+        throw toSetupError(err, conn.instanceUrl);
+      }
+      this.namespace = '';
+      try {
         response = await this.postToEndpoint(conn, unnamespacedPath, body);
-      } else if (error.statusCode === 401) {
-        throw new Error(
-          'VelesDev permission set not assigned. Assign it to your user on the Hub org.',
-        );
-      } else {
-        throw err;
+      } catch (fallbackErr: unknown) {
+        throw toSetupError(fallbackErr, conn.instanceUrl);
       }
     }
 
@@ -771,7 +835,6 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     fs.mkdirSync(rssDir, { recursive: true });
 
     const hubUrlClean = response.hubUrl.replace(/\/$/, '');
-    const sitesUrl = hubUrlClean.replace('.my.salesforce.com', '.my.salesforce-sites.com');
 
     fs.writeFileSync(
       path.join(rssDir, 'VelesHubUrl.remoteSite-meta.xml'),
@@ -781,17 +844,6 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     <isActive>true</isActive>
     <url>${this.escapeXml(hubUrlClean)}</url>
     <description>Veles Hub URL</description>
-</RemoteSiteSetting>`,
-    );
-
-    fs.writeFileSync(
-      path.join(rssDir, 'VelesHubSitesUrl.remoteSite-meta.xml'),
-      `<?xml version="1.0" encoding="UTF-8" ?>
-<RemoteSiteSetting xmlns="http://soap.sforce.com/2006/04/metadata">
-    <fullName>VelesHubSitesUrl</fullName>
-    <isActive>true</isActive>
-    <url>${this.escapeXml(sitesUrl)}</url>
-    <description>Veles Hub Sites URL</description>
 </RemoteSiteSetting>`,
     );
 
@@ -852,12 +904,12 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
   }
 
   private async configureHubUrl(username: string, hubUrl: string): Promise<void> {
-    const escapedUrl = hubUrl.replace(/'/g, "\\'");
+    const escapedUrl = this.escapeApexLiteral(hubUrl);
     await this.runApex(username, `${this.apexPrefix('VelesOrgSetup')}.configureHubUrl('${escapedUrl}');`, 'configure Hub URL');
   }
 
   private async configureHubIntegrationUsername(username: string, hubIntegrationUsername: string): Promise<void> {
-    const escaped = hubIntegrationUsername.replace(/'/g, "\\'");
+    const escaped = this.escapeApexLiteral(hubIntegrationUsername);
     await this.runApex(
       username,
       `${this.apexPrefix('VelesOrgSetup')}.configureHubIntegrationUsername('${escaped}');`,
@@ -866,7 +918,7 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
   }
 
   private async configureDefaultIntegrationUsername(username: string, integrationUsername: string): Promise<void> {
-    const escaped = integrationUsername.replace(/'/g, "\\'");
+    const escaped = this.escapeApexLiteral(integrationUsername);
     await this.runApex(
       username,
       `${this.apexPrefix('VelesOrgSetup')}.configureDefaultIntegrationUsername('${escaped}');`,
@@ -874,9 +926,13 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
     );
   }
 
-  private async triggerConnect(username: string, groupName: string | undefined): Promise<void> {
-    const groupParam = groupName ? `'${groupName}'` : 'null';
-    await this.runApex(username, `${this.apexPrefix('VelesOrgSetup')}.setupOrg(${groupParam});`, 'trigger connect');
+  private buildTriggerConnectScript(groupNames: string[]): string {
+    const literals = groupNames.map((name) => `'${this.escapeApexLiteral(name)}'`).join(', ');
+    return `${this.apexPrefix('VelesOrgSetup')}.setupOrg(new List<String>{ ${literals} });`;
+  }
+
+  private async triggerConnect(username: string, groupNames: string[]): Promise<void> {
+    await this.runApex(username, this.buildTriggerConnectScript(groupNames), 'trigger connect');
   }
 
   private async runApexFile(username: string, script: string, jsonFlag: boolean): Promise<string> {
@@ -959,6 +1015,12 @@ export default class VelesSetup extends SfCommand<VelesSetupResult> {
       await this.assignPermsets(targetOrgUsername, integrationUsername, integrationPermsetName);
     } catch (err) {
       this.warnDuringStep(`Integration permission set assignment failed: ${(err as Error).message}`);
+    }
+
+    try {
+      await this.grantVelesSeat(targetOrgUsername, integrationUsername);
+    } catch (err) {
+      this.warnDuringStep(`Veles seat grant failed: ${(err as Error).message}`);
     }
 
     this.detail('Configuring ECA pre-authorization...');
@@ -1073,8 +1135,8 @@ System.debug('TEMPLATE_PERMSET_FULLNAME:' + (ps.isEmpty() ? 'null' : (String.isB
     integrationUsername: string,
     integrationPermsetName: string,
   ): Promise<void> {
-    const escapedUser = integrationUsername.replace(/'/g, "\\'");
-    const escapedPermset = integrationPermsetName.replace(/'/g, "\\'");
+    const escapedUser = this.escapeApexLiteral(integrationUsername);
+    const escapedPermset = this.escapeApexLiteral(integrationPermsetName);
     const script = `
 List<User> users = [SELECT Id FROM User WHERE Username = '${escapedUser}' LIMIT 1];
 if (users.isEmpty()) { throw new System.IllegalArgumentException('No user found with username ${escapedUser}'); }
@@ -1088,6 +1150,36 @@ System.debug('PERMSET_ASSIGN_DONE: assigned=' + (existing == 0));
 `.trim();
 
     await this.runApex(targetOrgUsername, script, 'assign integration permset');
+  }
+
+  private async grantVelesSeat(targetOrgUsername: string, integrationUsername: string): Promise<void> {
+    const script = this.buildSeatGrantScript(integrationUsername, this.namespace);
+    if (!script) {
+      return;
+    }
+    this.detail('Granting a Veles seat to the integration user...');
+    const stdout = await this.runApexCapture(targetOrgUsername, script, 'grant Veles seat');
+    const remediation = this.parseSeatGrantOutcome(stdout);
+    if (remediation) {
+      this.warnDuringStep(remediation);
+    }
+  }
+
+  private buildSeatGrantScript(integrationUsername: string, namespace: string): string | null {
+    if (!namespace) {
+      return null;
+    }
+    const escapedUser = this.escapeApexLiteral(integrationUsername);
+    return `
+String outcome = ${namespace}.VelesOrgSetup.assignVelesSeat('${escapedUser}');
+System.debug('${SEAT_GRANT_MARKER}' + (outcome == null ? '' : outcome));
+`.trim();
+  }
+
+  private parseSeatGrantOutcome(stdout: string): string | null {
+    const match = stdout.match(new RegExp(`${SEAT_GRANT_MARKER}(.*)`));
+    const outcome = match ? match[1].trim() : '';
+    return outcome || null;
   }
 
   private async resolveEcaName(targetOrgUsername: string): Promise<string | null> {
@@ -1170,8 +1262,8 @@ System.debug('ECA_RESOLVED:' + (ecas.isEmpty() ? 'null' : ecas[0].DeveloperName)
     ecaDeveloperName: string,
     integrationPermsetName: string,
   ): Promise<void> {
-    const escapedEca = ecaDeveloperName.replace(/'/g, "\\'");
-    const escapedPermset = integrationPermsetName.replace(/'/g, "\\'");
+    const escapedEca = this.escapeApexLiteral(ecaDeveloperName);
+    const escapedPermset = this.escapeApexLiteral(integrationPermsetName);
     const nsFilter = this.namespace ? `NamespacePrefix = '${this.namespace}'` : 'NamespacePrefix = null';
     const script = `
 Id ecaId = [SELECT Id FROM ExternalClientApplication WHERE DeveloperName = '${escapedEca}' AND ${nsFilter} LIMIT 1].Id;

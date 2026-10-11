@@ -18,6 +18,10 @@ Sets up Veles on an existing scratch org or sandbox by creating an Environment r
 
   <%= config.bin %> <%= command.id %> --target-org my-scratch --target-dev-hub my-hub --group MyGroup
 
+- Set up Veles on scratch org taking configuration from two groups, highest priority first:
+
+  <%= config.bin %> <%= command.id %> --target-org my-scratch --group Overlay --group Baseline
+
 - Set up Veles on sandbox with explicit Hub:
 
   <%= config.bin %> <%= command.id %> --target-org my-sandbox --target-dev-hub my-hub
@@ -44,7 +48,7 @@ Hub or DevHub org alias or username (defaults to the scratch org's DevHub or the
 
 # flags.group.summary
 
-Environment group name on the Hub.
+Environment group name on the Hub. Repeat the flag to take configuration from several groups; the first one named wins when two groups set the same field. Scratch orgs only - a sandbox takes its groups from its Hub environment record. Omit it when exactly one group on the Hub is marked as a Scratch Org Group.
 
 # flags.installation-key.summary
 

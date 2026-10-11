@@ -4,6 +4,8 @@ SF CLI plugin for [Veles](https://beyondthecloud.dev/veles) — set up Veles on 
 
 ## Installation
 
+Needs the Veles managed package 0.109.0 or later on the Hub and on the target org.
+
 ```bash
 sf plugins install @beyondthecloud/sf-veles
 ```
@@ -13,7 +15,7 @@ sf plugins install @beyondthecloud/sf-veles
 > **Note:** This command does not create scratch orgs or sandboxes. The target org must already exist and be authorized with the Salesforce CLI before running `sf veles setup`. For sandboxes, an `Environment__c` record for that sandbox must also already exist on the Hub.
 
 ```bash
-sf veles setup --target-org <scratch-or-sandbox> [--target-dev-hub <hub>] [--group <name>] [--installation-key <key>]
+sf veles setup --target-org <scratch-or-sandbox> [--target-dev-hub <hub>] [--group <name>]... [--installation-key <key>]
 ```
 
 ### What it does
@@ -24,6 +26,7 @@ sf veles setup --target-org <scratch-or-sandbox> [--target-dev-hub <hub>] [--gro
 4. Configures the connection metadata
 5. Connects the org to the Hub; on verified connect the Hub automatically enqueues `EnvironmentSetupJob` to create the Hub→child Remote Site Setting (no manual "Deploy RSS" step required on the Hub)
 6. Runs environment setup (`VelesOrgSetup.runEnvironmentSetup`) to deploy the API-Access Remote Site Setting and stamp the hub org id automatically
+7. Grants the integration user a Veles seat if the Hub's licence is seat-limited (`VelesOrgSetup.assignVelesSeat`); best-effort, a failure or seat exhaustion surfaces as a warning, not a command failure
 
 ### Examples
 
@@ -33,6 +36,9 @@ sf veles setup --target-org my-scratch
 
 # Set up Veles on an existing scratch org with explicit DevHub and group
 sf veles setup --target-org my-scratch --target-dev-hub my-hub --group MyGroup
+
+# Take configuration from two groups, highest priority first
+sf veles setup --target-org my-scratch --group Overlay --group Baseline
 
 # Set up Veles on an existing sandbox with explicit Hub
 sf veles setup --target-org my-sandbox --target-dev-hub my-hub
@@ -49,14 +55,16 @@ sf veles setup --target-org my-scratch --json
 
 ### Flags
 
-| Flag                 | Alias | Required | Description                                                     |
-| -------------------- | ----- | -------- | --------------------------------------------------------------- |
-| `--target-org`       | `-o`  | Yes      | Already-created and authorized scratch org or sandbox to set up |
-| `--target-dev-hub`   | `-v`  | No       | Hub/DevHub org (defaults to SF CLI default)                     |
-| `--group`            | `-g`  | No       | Environment group name on the Hub                               |
-| `--installation-key` | `-k`  | No       | Installation key for the Veles package                          |
-| `--verbose`          |       | No       | Show detailed step-by-step output and a final setup summary     |
-| `--json`             |       | No       | Return a structured JSON result (standard SF CLI flag)          |
+| Flag                    | Alias | Required | Description                                                                                                                                                                                     |
+| ----------------------- | ----- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--target-org`          | `-o`  | Yes      | Already-created and authorized scratch org or sandbox to set up                                                                                                                                 |
+| `--target-dev-hub`      | `-v`  | No       | Hub/DevHub org (defaults to SF CLI default)                                                                                                                                                     |
+| `--group`               | `-g`  | No       | Environment group name on the Hub; repeatable, first wins. Scratch orgs only                                                                                                                    |
+| `--installation-key`    | `-k`  | No       | Installation key for the Veles package                                                                                                                                                          |
+| `--integration-permset` |       | No       | Name of the unmanaged clone of the Veles Hub Integration permission set (defaults to `VelesIntegration`). Setup creates it, assigns it to the integration user and pre-authorizes it on the ECA |
+| `--integration-user`    |       | No       | Username to grant integration-user permissions and ECA pre-authorization (defaults to the CLI-authenticated user on the target org)                                                             |
+| `--verbose`             |       | No       | Show detailed step-by-step output and a final setup summary                                                                                                                                     |
+| `--json`                |       | No       | Return a structured JSON result (standard SF CLI flag)                                                                                                                                          |
 
 ## Prerequisites
 
@@ -64,7 +72,7 @@ sf veles setup --target-org my-scratch --json
 - [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli) installed
 - Veles managed package installed on your Hub org
 - Authenticated to both the target org and Hub/DevHub
-- For sandboxes: an `Environment__c` record for the sandbox must already exist on the Hub
+- For sandboxes: an `Environment__c` record for the sandbox must already exist on the Hub. `--group` is refused for sandboxes; a sandbox takes its groups from that Hub environment record
 
 ## License
 
